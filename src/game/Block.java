@@ -186,9 +186,14 @@ public class Block {
 	
 	public void backUpLoad(){
 		int backUpPlayer = player == 1 ? 2 : 1;
+		backUpList.forEach(block -> {
+			block.player = backUpPlayer;
+		});
+		/*
 		for(Block b : backUpList){
 			b.player = backUpPlayer;
 		}
+		*/
 		backUpList.clear();
 		player = 0;
 	}

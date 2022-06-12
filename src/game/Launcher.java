@@ -20,7 +20,7 @@ public class Launcher {
 		g.start();
 	}
 	public static void startAItoAI(){
-		Game g = new Game(true, 7,7,8);
+		Game g = new Game(true, 8,8,8);
 		g.init();
 		g.start();
 	}

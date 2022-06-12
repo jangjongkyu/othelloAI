@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import game.Block;
@@ -144,6 +145,9 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 					copyBoard[i][j].setStr((scale * i) + j + "");
 					copyBoard[i][j].saveStr();
 					copyBoard[i][j].setPlayer(originBoard[i][j].getPlayer());
+					//좌표 setting 추가 2022-06-12 jkjang
+					copyBoard[i][j].setY(i);
+					copyBoard[i][j].setX(j);
 					if (copyBoard[i][j].getStrSave().equals(originBlock.getStrSave())) {
 						this.choiceBlock = copyBoard[i][j];
 					}
@@ -330,13 +334,14 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 				MultiThinking multi = new MultiThinking(board, b, monte);
 				thinkingList.add(multi);
 				monteCarloList.add(monte);
-				//multi.start();
+				multi.start();
 				if(!isPerfectLearnning) monte.start();
 			}
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
 		/* 몬테카를로로 중요한 수만 읽기*/
+		/*
 		if(!isPerfectLearnning){
 			for(MonteCarloSearch mont: monteCarloList){
 				try {
@@ -377,6 +382,7 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 		for(MultiThinking m : thinkingList){
 			m.start();
 		}
+		*/
 
 		gameView.appendText(" [ 수읽기중.. ]");
 		int minRouteNum = 0;
@@ -386,8 +392,8 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 			try {
 				//System.out.println("[스레드 기다리는중]");
 				m.join();
-				//if(!isPerfectLearnning)
-				//	m.getmonteCarloSearch().join();
+				if(!isPerfectLearnning)
+					m.getmonteCarloSearch().join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -443,73 +449,98 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 	private int routeSearchABP2(int currPlayer, Block b, Block[][] copyBoard, List<Block> emptyBlockList, int cnt,
 			boolean searchMax, Integer max, Integer min) {
 		// TODO ABP1
-		Long timeStart1 = System.nanoTime();
+		//Long timeStart1 = System.nanoTime();
 		List<Block> cloneEmptyBlockList = new ArrayList<Block>();
 		cloneEmptyBlockList.addAll(emptyBlockList);
 		cloneEmptyBlockList.remove(b);
-		Long timeEnd1 = System.nanoTime();
-		this.time1 += (timeEnd1 - timeStart1);
+		//Long timeEnd1 = System.nanoTime();
+		//this.time1 += (timeEnd1 - timeStart1);
 
-		Long timeStart2 = System.nanoTime();
+		//Long timeStart2 = System.nanoTime();
 		b.settingBoardVirtual(currPlayer);
-		Long timeEnd2 = System.nanoTime();
-		this.time2 += (timeEnd2 - timeStart2);
+		//Long timeEnd2 = System.nanoTime();
+		//this.time2 += (timeEnd2 - timeStart2);
 		
 		if (cnt > deps || cnt > lastCnt) {
 			int res = 0;
+			/*
 			if (isPerfectLearnning) {
 				res = calculateScore(cnt, copyBoard);
 			} else {
 				res = calculateScoreOpenning(cnt, copyBoard, cloneEmptyBlockList);
 			}
-			Long timeStart3 = System.nanoTime();
+			*/
+			res = isPerfectLearnning ? 
+					calculateScore(cnt, copyBoard):
+					calculateScoreOpenning(cnt, copyBoard, cloneEmptyBlockList);
+			//Long timeStart3 = System.nanoTime();
 			b.backUpLoad();
-			Long timeEnd3 = System.nanoTime();
-			this.time3 += (timeEnd3 - timeStart3);
+			//Long timeEnd3 = System.nanoTime();
+			//this.time3 += (timeEnd3 - timeStart3);
 			return res;
 		}
 
-		Long timeStart4 = System.nanoTime();
+		//Long timeStart4 = System.nanoTime();
 		currPlayer = currPlayer == 1 ? 2 : 1;
+		
+		final int currPlayerFinal = currPlayer;
 		List<Block> impBlockList = new ArrayList<Block>();
+		cloneEmptyBlockList.forEach(impBlock -> {
+			boolean tBoolean = impBlock.impossible(currPlayerFinal)? 
+					impBlockList.add(impBlock): 
+					false;
+		});
+		//atomicInteger = null;
+		/*
 		for (Block impBlock : cloneEmptyBlockList) {
 			if (impBlock.impossible(currPlayer)) {
 				impBlockList.add(impBlock);
 			}
 		}
-		
+		*/
 
 		if (impBlockList.isEmpty()) {
 			currPlayer = currPlayer == 1 ? 2 : 1;
 			searchMax = !searchMax;
+			
+			final int currPlayerFinal2 = currPlayer;
+			cloneEmptyBlockList.forEach(impBlock -> {
+				boolean tBoolean = impBlock.impossible(currPlayerFinal2)? 
+						impBlockList.add(impBlock): 
+						false;
+			});
+			/*
 			for (Block impBlock : cloneEmptyBlockList) {
 				if (impBlock.impossible(currPlayer)) {
 					impBlockList.add(impBlock);
 				}
 			}
+			*/
 		}
-		Long timeEnd4 = System.nanoTime();
-		this.time4 += (timeEnd4 - timeStart4);
+		
+		//Long timeEnd4 = System.nanoTime();
+		//this.time4 += (timeEnd4 - timeStart4);
 
 		int nextPlayer = currPlayer;
 		if (impBlockList.isEmpty()) {
 			int res = calculateScore(cnt, copyBoard);
-			Long timeStart3 = System.nanoTime();
+			//Long timeStart3 = System.nanoTime();
 			b.backUpLoad();
-			Long timeEnd3 = System.nanoTime();
-			this.time3 += (timeEnd3 - timeStart3);
+			//Long timeEnd3 = System.nanoTime();
+			//this.time3 += (timeEnd3 - timeStart3);
 			
 			return res;
 		}
 		// TODO : 아래쪽 for문에서 돌릴지 고민
 
-		int forSize = impBlockList.size();
+		//int forSize = impBlockList.size();
 		++cnt;
 		
 		//섞기
 		Collections.shuffle(impBlockList);
-		for (int i = 0; i < forSize; i++) {
-			Block nextChoice = impBlockList.get(i);
+		//for (int i = 0; i < forSize; i++) {
+		for(Block nextChoice : impBlockList){
+			//Block nextChoice = impBlockList.get(i);
 			int tempWinCnt = routeSearchABP2(nextPlayer, nextChoice, copyBoard, cloneEmptyBlockList, cnt,
 					!searchMax, max, min);
 
@@ -529,10 +560,10 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 		}
 
 		// 처음엔 false
-		Long timeStart3 = System.nanoTime();
+		//Long timeStart3 = System.nanoTime();
 		b.backUpLoad();
-		Long timeEnd3 = System.nanoTime();
-		this.time3 += (timeEnd3 - timeStart3);
+		//Long timeEnd3 = System.nanoTime();
+		//this.time3 += (timeEnd3 - timeStart3);
 		if (searchMax) {
 			return max;
 		} else {
@@ -542,7 +573,7 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 	
 	private int calculateScore(int currCnt, Block[][] copyBoard) {
 		// TODO:calculateScore
-		Long timeStart5 = System.nanoTime();
+		//Long timeStart5 = System.nanoTime();
 		calculCnt++;
 		int aiArea = 0;
 		int enemyArea = 0;
@@ -556,8 +587,8 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 				}
 			}
 		}
-		Long timeEnd5 = System.nanoTime();
-		this.time5 += (timeEnd5 - timeStart5);
+		//Long timeEnd5 = System.nanoTime();
+		//this.time5 += (timeEnd5 - timeStart5);
 		return aiArea - enemyArea;
 	}
 
@@ -569,7 +600,7 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 
 	private int calculateScoreOpenning(int currCnt, Block[][] copyBoard, List<Block> emptyBlockList) {
 		// TODO:calculateScore
-		Long timeStart6 = System.nanoTime();
+		//Long timeStart6 = System.nanoTime();
 		calculCnt++;
 		int aiImpossible = 0;
 		int enemyImpossible = 0;
@@ -581,20 +612,38 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 			if (b.impossible(enemyPlayer)) {
 				enemyImpossible += 2;
 			}
+			
+			if(b.getPlayer() == this.player) {
+				if(b.isCorner) {
+					aiImpossible += plusCorner;
+				}else if(isFixedBlock(copyBoard, b.getY(), b.getX())){
+					aiImpossible += plusFixedBlock;
+				}else {
+					aiImpossible --;
+				}
+			}else if(b.getPlayer() == enemyPlayer){
+				if(b.isCorner) {
+					enemyImpossible += plusCorner;
+				}else if(isFixedBlock(copyBoard, b.getY(), b.getX())){
+					enemyImpossible += plusFixedBlock;
+				}else {
+					enemyImpossible --;
+				}
+			}
 		}
 		
 		// TODO : 구석의 돌을 먹고있으면 구석점수 더먹음  -> 나중에 구석이 아닌 굳힘돌로 바꿔야함
+		/*
 		for(int i = 0 ; i < scale ; i++) {
 			
 			for(int j = 0 ; j < scale ; j++ ) {
 				Block currBoard = copyBoard[i][j];
-				// TODO : 사이드일경우 스코어 감소 안시키는 로직 임시삭제
 				if(currBoard.getPlayer() == this.player) {
 					if(currBoard.isCorner) {
 						aiImpossible += plusCorner;
 					}else if(isFixedBlock(copyBoard, i, j)){
 						aiImpossible += plusFixedBlock;
-					}else /*if(!currBoard.isSide)*/{
+					}else {
 						aiImpossible --;
 					}
 				}else if(currBoard.getPlayer() == enemyPlayer){
@@ -602,22 +651,23 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 						enemyImpossible += plusCorner;
 					}else if(isFixedBlock(copyBoard, i, j)){
 						enemyImpossible += plusFixedBlock;
-					}else /*if(!currBoard.isSide)*/{
+					}else {
 						enemyImpossible --;
 					}
 				}
-				
 			}
 			
 		}
-		Long timeEnd6 = System.nanoTime();
-		this.time6 += (timeEnd6 - timeStart6);
+		*/
+		//Long timeEnd6 = System.nanoTime();
+		//this.time6 += (timeEnd6 - timeStart6);
 		
 		return aiImpossible - enemyImpossible;
 	}
 	
 	
 	public boolean isFixedBlock(Block[][] copyBoard, int checkI, int checkJ) {
+		//if(true) return false;
 		int currPlayer = copyBoard[checkI][checkJ].getPlayer();
 		
 		int controllValue = 0;
@@ -637,24 +687,24 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 				if(i == 0 )
 					return true;
 			}
-		controllValue = 0;
-
-		loof1 : for(int i = 0 ; i < scale ; i++) {
-
-			for(int j = 0 ; j <= checkJ + controllValue ; j++) {
-
-				if(copyBoard[i][j].getPlayer() != currPlayer) {
-					break loof1;
+			controllValue = 0;
+	
+			loof1 : for(int i = 0 ; i < scale ; i++) {
+	
+				for(int j = 0 ; j <= checkJ + controllValue ; j++) {
+	
+					if(copyBoard[i][j].getPlayer() != currPlayer) {
+						break loof1;
+					}
 				}
+	
+				if (i >= checkI)
+					controllValue--;
+	
+				if(i == scale-1 )
+					return true;
 			}
-
-			if (i >= checkI)
-				controllValue--;
-
-			if(i == scale-1 )
-				return true;
-		}
-		controllValue = 0;
+			controllValue = 0;
 
 		}
 		
@@ -675,23 +725,23 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 				if(i == 0 )
 					return true;
 			}
-		controllValue = 0;
-
-
-		loof7 : for (int i = checkI; i < 8; i++) {
-			
-			if(checkJ + controllValue < scale) controllValue++;
-			
-			for (int j = 0 ; j < checkJ + controllValue; j++) {
-				if(copyBoard[i][j].getPlayer() != currPlayer) {
-					break loof7;
+			controllValue = 0;
+	
+	
+			loof7 : for (int i = checkI; i < 8; i++) {
+				
+				if(checkJ + controllValue < scale) controllValue++;
+				
+				for (int j = 0 ; j < checkJ + controllValue; j++) {
+					if(copyBoard[i][j].getPlayer() != currPlayer) {
+						break loof7;
+					}
 				}
+	
+				if(i == scale-1 )
+					return true;
 			}
-
-			if(i == scale-1 )
-				return true;
-		}
-		controllValue = 0;
+			controllValue = 0;
 
 		}
 		
@@ -714,25 +764,25 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 				if(i == scale-1 )
 					return true;
 			}
-		controllValue = 0;
-
-
-
-		loof4 : for(int i = 7 ; i >= scale ; i--) {
-
-			if(i < checkI) controllValue++;
-
-			for(int j = checkJ - controllValue ; j < scale ; j++) {
-
-				if(copyBoard[i][j].getPlayer() != currPlayer) {
-					break loof4;
+			controllValue = 0;
+	
+	
+	
+			loof4 : for(int i = 7 ; i >= scale ; i--) {
+	
+				if(i < checkI) controllValue++;
+	
+				for(int j = checkJ - controllValue ; j < scale ; j++) {
+	
+					if(copyBoard[i][j].getPlayer() != currPlayer) {
+						break loof4;
+					}
 				}
+	
+				if(i == 0 )
+					return true;
 			}
-
-			if(i == 0 )
-				return true;
-		}
-		controllValue = 0;
+			controllValue = 0;
 
 		}
 		
@@ -753,24 +803,24 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 				if(i == scale-1 )
 					return true;
 			}
-		controllValue = 0;
-
-
-		loof6 : for(int i = checkI ; i >= 0 ; i--) {
-
-			if (i < checkI && checkJ > controllValue ) controllValue++;
-
-			for(int j = checkJ - controllValue ; j < scale ; j++) {
-
-				if(copyBoard[i][j].getPlayer() != currPlayer) {
-					break loof6;
+			controllValue = 0;
+	
+	
+			loof6 : for(int i = checkI ; i >= 0 ; i--) {
+	
+				if (i < checkI && checkJ > controllValue ) controllValue++;
+	
+				for(int j = checkJ - controllValue ; j < scale ; j++) {
+	
+					if(copyBoard[i][j].getPlayer() != currPlayer) {
+						break loof6;
+					}
 				}
+	
+				if(i == 0 )
+					return true;
 			}
-
-			if(i == 0 )
-				return true;
-		}
-		controllValue = 0;
+			controllValue = 0;
 
 		}
 		
