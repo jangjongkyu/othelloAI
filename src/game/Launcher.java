@@ -1,7 +1,9 @@
 package game;
 
 import gui.MenuView;
-
+/*
+ * branch 분기 임시 commit
+ */
 public class Launcher {
 	public static void main(String[] args) {
 		MenuView menu = new MenuView();
