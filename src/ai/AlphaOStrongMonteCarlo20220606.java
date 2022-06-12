@@ -612,7 +612,7 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 			if (b.impossible(enemyPlayer)) {
 				enemyImpossible += 2;
 			}
-			
+			/*
 			if(b.getPlayer() == this.player) {
 				if(b.isCorner) {
 					aiImpossible += plusCorner;
@@ -630,10 +630,10 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 					enemyImpossible --;
 				}
 			}
+			*/
 		}
 		
 		// TODO : 구석의 돌을 먹고있으면 구석점수 더먹음  -> 나중에 구석이 아닌 굳힘돌로 바꿔야함
-		/*
 		for(int i = 0 ; i < scale ; i++) {
 			
 			for(int j = 0 ; j < scale ; j++ ) {
@@ -656,9 +656,7 @@ public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 					}
 				}
 			}
-			
 		}
-		*/
 		//Long timeEnd6 = System.nanoTime();
 		//this.time6 += (timeEnd6 - timeStart6);
 		
