@@ -19,7 +19,7 @@ import util.WinProb;
 /*
  * AlphaOStrongMonteCarlo2_1 수정판
  * TODO : 로직성능개선
- * git 연동
+ * git 연동 _ test 2022-06-12
  */
 public class AlphaOStrongMonteCarlo20220606 implements OthelloAI {
 	private int player;
