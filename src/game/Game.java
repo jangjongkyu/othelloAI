@@ -116,11 +116,11 @@ public class Game {
 				} else if (board[i][j].getPlayer() == 2) {
 					p2Block++;
 				}
-				System.out.printf("[%2s]", board[i][j].getStr() + "");
+				//System.out.printf("[%2s]", board[i][j].getStr() + "");
 			}
-			System.out.println();
+			//System.out.println();
 		}
-		System.out.println("\n[" + this.cnt + "]현재 스코어 : player1(" + p1Block + ") : (" + p2Block + ")player2");
+		//System.out.println("\n[" + this.cnt + "]현재 스코어 : player1(" + p1Block + ") : (" + p2Block + ")player2");
 	}
 
 	public void drawBoardGUI() {
@@ -203,15 +203,15 @@ public class Game {
 		}
 		frame.appendText("["+cnt+" Turn]"+currPlayer + "p (level:" + level + ") AI 생각중 ..");
 		h = null;
-		if(currPlayer == 1)
+		//if(currPlayer == 1)
 			// 테스트버젼
 			//h = new AlphaOStrongMonteCarlo(currPlayer, board, cnt, lastCnt, level, frame);
 			
 			// 2022-06-06 임시주석
 			//h = new AlphaOStrongMonteCarlo2_1(currPlayer, board, cnt, lastCnt, level, frame);
 			h = new AlphaOStrongMonteCarlo20220606(currPlayer, board, cnt, lastCnt, level, frame);
-		else
-			h = new AlphaOStrongMonteCarlo2_1(currPlayer, board, cnt, lastCnt, level, frame);
+		//else
+		//	h = new AlphaOStrongMonteCarlo2_1(currPlayer, board, cnt, lastCnt, level, frame);
 		//	h = new AlphaOStrongMonteCarlo2(currPlayer, board, cnt, lastCnt, level, frame);
 			//h = new AlphaOStrongSpeed5_180421(currPlayer, board, cnt, lastCnt, level, frame);
 			//현재 최강버젼 : 2018-09-22  
